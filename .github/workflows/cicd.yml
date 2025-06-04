@@ -1,4 +1,4 @@
-name: project-cicd
+name: project-ci
 
 on:
   push:
