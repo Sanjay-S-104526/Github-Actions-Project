@@ -1,4 +1,4 @@
-name: demo-cicd
+name: demo-project
 
 on:
   push:
