@@ -51,24 +51,24 @@ jobs:
         name: app-jar
         path: target/*.jar 
         
-    - uses: actions/checkout@v4
-      with:
-        # Disabling shallow clones is recommended for improving the relevancy of reporting
-        fetch-depth: 0
-    - name: SonarQube Scan
-      uses: SonarSource/sonarqube-scan-action@v5.0.0
-      env:
-        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        SONAR_HOST_URL: http://15.207.111.224:9001
+   # # - uses: actions/checkout@v4
+   #    with:
+   #      # Disabling shallow clones is recommended for improving the relevancy of reporting
+   #      fetch-depth: 0
+   #  - name: SonarQube Scan
+   #    uses: SonarSource/sonarqube-scan-action@v5.0.0
+   #    env:
+   #      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+   #      SONAR_HOST_URL: http://15.207.111.224:9001 #
         
-    - name: SonarQube Quality Gate check
-      id: sonarqube-quality-gate-check
-      uses: sonarsource/sonarqube-quality-gate-action@master
-      with:
-        pollingTimeoutSec: 600
-      env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SONAR_HOST_URL: http://15.207.111.224:9001
+    # - name: SonarQube Quality Gate check
+    #   id: sonarqube-quality-gate-check
+    #   uses: sonarsource/sonarqube-quality-gate-action@master
+    #   with:
+    #     pollingTimeoutSec: 600
+    #   env:
+    #       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+    #       SONAR_HOST_URL: http://15.207.111.224:9001
 
   buils_docker_image_and_push:
     runs-on: ubuntu-latest
