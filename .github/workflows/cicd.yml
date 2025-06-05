@@ -87,4 +87,5 @@ jobs:
         image: sanjay4051/githubactions
         registry: docker.io
         username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
         password: ${{ secrets.DOCKER_PASSWORD }}
