@@ -81,10 +81,15 @@ jobs:
         name: app-jar
         path: app  # this will download JAR to ./app folder
         
-    - name: Build and Push Docker Image
-      uses: mr-smithers-excellent/docker-build-push@v4
-      with:
-        image: sanjay4051/githubactions
-        registry: docker.io
-        username: ${{ secrets.DOCKER_USERNAME }}
-        password: ${{ secrets.DOCKERHUB_TOKEN }}
+   - name: Build and Push Docker Image
+    #  uses: mr-smithers-excellent/docker-build-push@v4
+      # with:
+      #   image: sanjay4051/githubactions
+      #   registry: docker.io
+      #   username: ${{ secrets.DOCKER_USERNAME }}
+      #   password: ${{ secrets.DOCKERHUB_TOKEN }}
+        uses: docker/build-push-action@v3
+        with:
+          context:.
+          push: true
+          tags: sanjay4051/githubactions:latest
