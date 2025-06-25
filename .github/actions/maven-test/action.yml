@@ -5,3 +5,4 @@ runs:
   steps:
     - name: Run Unit Tests
       run: mvn test
+      shell: bash
