@@ -1,0 +1,7 @@
+name: 'Maven Test'
+description: 'Runs mvn test'
+runs:
+  using: 'composite'
+  steps:
+    - name: Run Unit Tests
+      run: mvn test
