@@ -1,0 +1,7 @@
+name: 'Maven Compile'
+description: 'Runs mvn compile'
+runs:
+  using: 'composite'
+  steps:
+    - name: Compile with Maven
+      run: mvn compile
