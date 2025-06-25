@@ -1,4 +1,4 @@
-\name: cicd-deploy-versioning
+name: cicd-deploy-versioning
 
 on:
   push:
