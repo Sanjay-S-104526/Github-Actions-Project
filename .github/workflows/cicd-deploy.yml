@@ -1,0 +1,77 @@
+
+name: CI/CD Pipeline
+
+on:
+  #push:
+    branches:
+      - main
+      - Dev
+      - staging
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: ./.github/actions/setup-node-deps
+        with:
+          node-version: '18'
+
+      - name: Run Tests
+        run: npm test
+
+  unit-test:
+    needs: build-test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: ./.github/actions/setup-node-deps
+        with:
+          node-version: '18'
+          
+      - name: Run Unit Tests
+        run: npm run test
+
+  docker-deploy:
+    needs: unit-test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set Environment Variables Based on Branch
+        uses: ./.github/actions/set-env-by-branch
+        with:
+          branch: ${{ github.ref_name }}
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1  # Replace with your actual AWS region
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: Build, Tag, and Push the Image to Amazon ECR
+        id: build-image
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          IMAGE_TAG: latest
+        run: |
+          echo "Using ECR repo: $AWS_ECR_REPOSITORY_NAME"
+          IMAGE_URI="$ECR_REGISTRY/$AWS_ECR_REPOSITORY_NAME:$IMAGE_TAG"
+          echo "Building Docker image: $IMAGE_URI"
+          docker build -t "$IMAGE_URI" .
+          docker push "$IMAGE_URI"
