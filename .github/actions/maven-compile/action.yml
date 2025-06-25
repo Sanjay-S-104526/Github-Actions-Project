@@ -5,3 +5,4 @@ runs:
   steps:
     - name: Compile with Maven
       run: mvn compile
+      shell: bash
