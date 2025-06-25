@@ -5,6 +5,8 @@ runs:
   steps:
     - name: Package with Maven
       run: mvn package
+      shell: bash
+
     - name: Upload JAR
       uses: actions/upload-artifact@v4
       with:
