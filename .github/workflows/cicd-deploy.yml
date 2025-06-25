@@ -33,7 +33,7 @@ jobs:
 
 
   docker-deploy:
-    needs: test
+    needs: build
     runs-on: ubuntu-latest
 
     steps:
