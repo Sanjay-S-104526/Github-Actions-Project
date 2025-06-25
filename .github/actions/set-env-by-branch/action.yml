@@ -16,6 +16,15 @@ runs:
         elif [[ "$BRANCH_NAME" == "staging" ]]; then
           echo "CI_ENVIRONMENT_NAME=staging" >> $GITHUB_ENV
           echo "AWS_ECR_REPOSITORY_NAME=staging" >> $GITHUB_ENV
+        elif [[ "$BRANCH_NAME" == "qa" ]]; then
+          echo "CI_ENVIRONMENT_NAME=qa" >> $GITHUB_ENV
+          echo "AWS_ECR_REPOSITORY_NAME=qa" >> $GITHUB_ENV
+        elif [[ "$BRANCH_NAME" == "feature" ]]; then
+          echo "CI_ENVIRONMENT_NAME=feature" >> $GITHUB_ENV
+          echo "AWS_ECR_REPOSITORY_NAME=feature" >> $GITHUB_ENV
+        elif [[ "$BRANCH_NAME" == "uat" ]]; then
+          echo "CI_ENVIRONMENT_NAME=uat" >> $GITHUB_ENV
+          echo "AWS_ECR_REPOSITORY_NAME=uat" >> $GITHUB_ENV
         else
           echo "CI_ENVIRONMENT_NAME=default" >> $GITHUB_ENV
           echo "AWS_ECR_REPOSITORY_NAME=node.js" >> $GITHUB_ENV
