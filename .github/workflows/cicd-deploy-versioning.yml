@@ -1,4 +1,4 @@
-name: cicd-deploy-versioning
+\name: cicd-deploy-versioning
 
 on:
   push:
@@ -57,10 +57,29 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
 
-      - name: Build and Push Docker Image to ECR
-        uses: ./.github/actions/docker-build-push
-        with:
-           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-           aws-region: us-east-1
-           ecr-repo-name: ${{ secrets.AWS_ECR_REPOSITORY_NAME }}
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: Generate Docker Image Tag
+        id: tag
+        run: |
+          BRANCH="${{ github.ref_name }}"
+          BUILDNUMB="${{ github.run_number }}"
+          DATE=$(date +'%d%m%Y')
+          TAG="${BRANCH}_${BUILDNUMB}_${DATE}"
+          echo "IMAGE_TAG=$TAG" >> $GITHUB_ENV
+          echo "IMAGE_TAG=$TAG" >> $GITHUB_OUTPUT
+      - name: Build, Tag, and Push the Image to Amazon ECR
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          IMAGE_TAG: ${{ env.IMAGE_TAG }}
+        run: |
+          IMAGE_URI="$ECR_REGISTRY/$AWS_ECR_REPOSITORY_NAME:$IMAGE_TAG"
+          echo "Building Docker image: $IMAGE_URI"
+          docker build -t "$IMAGE_URI" .
+          docker push "$IMAGE_URI"
+          # Also push 'latest' tag
+          LATEST_URI="$ECR_REGISTRY/$AWS_ECR_REPOSITORY_NAME:latest"
+          docker tag "$IMAGE_URI" "$LATEST_URI"
+          docker push "$LATEST_URI"
