@@ -79,6 +79,7 @@ jobs:
           echo "Building Docker image: $IMAGE_URI"
           docker build -t "$IMAGE_URI" .
           docker push "$IMAGE_URI"
+          
           # Also push 'latest' tag
           LATEST_URI="$ECR_REGISTRY/$AWS_ECR_REPOSITORY_NAME:latest"
           docker tag "$IMAGE_URI" "$LATEST_URI"
