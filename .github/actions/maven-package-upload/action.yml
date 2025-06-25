@@ -1,0 +1,12 @@
+name: 'Maven Package and Upload'
+description: 'Packages the app and uploads the JAR'
+runs:
+  using: 'composite'
+  steps:
+    - name: Package with Maven
+      run: mvn package
+    - name: Upload JAR
+      uses: actions/upload-artifact@v4
+      with:
+        name: app-jar
+        path: target/*.jar
