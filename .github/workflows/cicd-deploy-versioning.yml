@@ -70,6 +70,7 @@ jobs:
           TAG="${BRANCH}_${BUILDNUMB}_${DATE}"
           echo "IMAGE_TAG=$TAG" >> $GITHUB_ENV
           echo "IMAGE_TAG=$TAG" >> $GITHUB_OUTPUT
+          
       - name: Build, Tag, and Push the Image to Amazon ECR
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
@@ -80,7 +81,7 @@ jobs:
           docker build -t "$IMAGE_URI" .
           docker push "$IMAGE_URI"
           
-          # Also push 'latest' tag
-          LATEST_URI="$ECR_REGISTRY/$AWS_ECR_REPOSITORY_NAME:latest"
-          docker tag "$IMAGE_URI" "$LATEST_URI"
-          docker push "$LATEST_URI"
+          # # Also push 'latest' tag
+          # LATEST_URI="$ECR_REGISTRY/$AWS_ECR_REPOSITORY_NAME:latest"
+          # docker tag "$IMAGE_URI" "$LATEST_URI"
+          # docker push "$LATEST_URI"
