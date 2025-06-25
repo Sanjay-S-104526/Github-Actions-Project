@@ -1,0 +1,23 @@
+name: 'Set Environment Variables by Branch'
+description: 'Sets CI environment variables based on the current branch'
+inputs:
+  branch:
+    description: 'The branch name'
+    required: true
+runs:
+  using: 'composite'
+  steps:
+    - run: |
+        echo "Branch: ${{ inputs.branch }}"
+        BRANCH_NAME=$(echo "${{ inputs.branch }}" | tr '[:upper:]' '[:lower:]')
+        if [[ "$BRANCH_NAME" == "dev" ]]; then
+          echo "CI_ENVIRONMENT_NAME=dev" >> $GITHUB_ENV
+          echo "AWS_ECR_REPOSITORY_NAME=dev" >> $GITHUB_ENV
+        elif [[ "$BRANCH_NAME" == "staging" ]]; then
+          echo "CI_ENVIRONMENT_NAME=staging" >> $GITHUB_ENV
+          echo "AWS_ECR_REPOSITORY_NAME=staging" >> $GITHUB_ENV
+        else
+          echo "CI_ENVIRONMENT_NAME=default" >> $GITHUB_ENV
+          echo "AWS_ECR_REPOSITORY_NAME=node.js" >> $GITHUB_ENV
+        fi
+      shell: bash
