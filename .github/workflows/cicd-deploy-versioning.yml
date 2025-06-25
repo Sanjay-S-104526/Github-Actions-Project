@@ -32,10 +32,9 @@ jobs:
       - uses: ./.github/actions/setup-java
       - uses: ./.github/actions/maven-package-upload
 
-  docker-deploy:
+  deploy:
     needs: build
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
