@@ -40,7 +40,7 @@ runs:
         ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
         IMAGE_TAG: ${{ env.IMAGE_TAG }}
       run: |
-        IMAGE_URI="$ECR_REGISTRY/${{ inputs.ecr-repo-name }}:$IMAGE_TAG"
+        IMAGE_URI="$ECR_REGISTRY/$AWS_ECR_REPOSITORY_NAME:$IMAGE_TAG"
         echo "Building Docker image: $IMAGE_URI"
         docker build -t "$IMAGE_URI" .
         docker push "$IMAGE_URI"
