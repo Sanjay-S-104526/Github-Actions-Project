@@ -5,7 +5,7 @@ on:
       - main
       - staging
       - feature
-      - uat
+      - uat 
 
 jobs:
   compile:
