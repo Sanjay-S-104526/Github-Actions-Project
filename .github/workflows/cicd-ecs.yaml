@@ -1,10 +1,10 @@
 name: CI/CD Pipeline
-# on:
-#   push:
-#     branches:
-#       - main
-#       - staging
-#       - feature
+on:
+  push:
+    branches:
+      - main
+      - staging
+      - feature
 
 jobs:
   compile:
@@ -68,6 +68,10 @@ jobs:
           echo "IMAGE_TAG=$TAG" >> $GITHUB_ENV
           echo "IMAGE_TAG=$TAG" >> $GITHUB_OUTPUT
 
+      - name: Inject deployment version into application.properties
+        run: |
+          echo "app.version=${{ env.IMAGE_TAG }}" >> src/main/resources/application.properties
+          
       - name: Build, Tag, and Push the Image to Amazon ECR
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
