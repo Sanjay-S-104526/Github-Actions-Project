@@ -2,9 +2,9 @@ name: cicd-deploy-versioning
 on:
   push:
     branches:
-     # - main
-      - staging
-      - feature 
+     # # - main
+     #  - staging
+     #  - feature 
 
 jobs:
   compile:
