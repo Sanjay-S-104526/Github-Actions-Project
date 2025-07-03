@@ -75,7 +75,7 @@ jobs:
       
           sed -i '/^app.version=/d' src/main/resources/application.properties
           echo "app.version=${{ env.IMAGE_TAG }}" >> src/main/resources/application.properties
-      
+     
           echo "After:"
           cat src/main/resources/application.properties
       
