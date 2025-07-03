@@ -70,19 +70,17 @@ jobs:
 
       - name: Inject deployment version into application.properties
         run: |
-            sed -i '/^app.version=/d' src/main/resources/application.properties
-            echo "app.version=${{ env.IMAGE_TAG }}" >> src/main/resources/application.properties
-
+          echo "Before:"
+          cat src/main/resources/application.properties || echo "File not found"
       
-      - name: Debug application.properties before and after
-        run: |
-            echo "Before:"
-            cat src/main/resources/application.properties || echo "File not found"
-            sed -i '/^app.version=/d' src/main/resources/application.properties
-            echo "app.version=${{ env.IMAGE_TAG }}" >> src/main/resources/application.properties
-            echo "After:"
-            cat src/main/resources/application.properties
-            ls -l src/main/resources/application.properties
+          sed -i '/^app.version=/d' src/main/resources/application.properties
+          echo "app.version=${{ env.IMAGE_TAG }}" >> src/main/resources/application.properties
+      
+          echo "After:"
+          cat src/main/resources/application.properties
+      
+          ls -l src/main/resources/application.properties
+
 
 
 
