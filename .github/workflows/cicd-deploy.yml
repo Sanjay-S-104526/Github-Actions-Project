@@ -1,12 +1,8 @@
 name: cicd-deploy
-# on:
-#   push:
-#     branches:
-#       - main
-#       - dev
-#       - staging
-#       - feature
-#       - uat
+on:
+  push:
+    branches:
+      - feature
 
 jobs:
   compile:
