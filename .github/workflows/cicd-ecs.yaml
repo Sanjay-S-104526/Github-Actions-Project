@@ -98,7 +98,7 @@ jobs:
 
           cat > task-def.json <<EOF
           {
-            "family": "ecs-task-${{ github.ref_name }}",
+            "family": "ecs-deployment-task",
             "networkMode": "awsvpc",
             "requiresCompatibilities": ["FARGATE"],
             "cpu": "512",
