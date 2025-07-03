@@ -70,7 +70,9 @@ jobs:
 
       - name: Inject deployment version into application.properties
         run: |
-          echo "app.version=${{ env.IMAGE_TAG }}" >> src/main/resources/application.properties
+            sed -i '/^app.version=/d' src/main/resources/application.properties
+            echo "app.version=${{ env.IMAGE_TAG }}" >> src/main/resources/application.properties
+
 
       - name: Build, Tag, and Push the Image to Amazon ECR
         env:
