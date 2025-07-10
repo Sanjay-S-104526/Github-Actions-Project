@@ -1,10 +1,10 @@
 name: ECS CI/CD Pipeline
-on:
-  push:
-    branches:
-     # - main
-      - staging
-      - feature
+# on:
+#   push:
+#     branches:
+#      # - main
+#       - staging
+#       - feature
 
 jobs:
   compile:
