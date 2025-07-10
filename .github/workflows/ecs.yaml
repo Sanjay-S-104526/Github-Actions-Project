@@ -29,6 +29,25 @@ jobs:
       - uses: ./.github/actions/setup-java
       - uses: ./.github/actions/maven-package-upload
 
+      - uses: actions/checkout@v4
+        with:
+        # Disabling shallow clones is recommended for improving the relevancy of reporting
+        fetch-depth: 0
+      - name: SonarQube Scan
+        uses: SonarSource/sonarqube-scan-action@v5.0.0
+        env:
+           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+           SONAR_HOST_URL: http://15.207.111.224:9001 #
+        
+      - name: SonarQube Quality Gate check
+        id: sonarqube-quality-gate-check
+        uses: sonarsource/sonarqube-quality-gate-action@master
+        with:
+          pollingTimeoutSec: 600
+        env:
+            SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+            SONAR_HOST_URL: http://15.207.111.224:9001
+
   cicd-deploy-versioning:
     needs: build
     runs-on: ubuntu-latest
@@ -67,9 +86,6 @@ jobs:
           TAG="${BRANCH}_${BUILDNUMB}_${DATE}"
           echo "IMAGE_TAG=$TAG" >> $GITHUB_ENV
           echo "IMAGE_TAG=$TAG" >> $GITHUB_OUTPUT
-
-
-
 
       - name: Build, Tag, and Push the Image to Amazon ECR
         env:
