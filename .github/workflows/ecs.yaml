@@ -1,43 +1,41 @@
 name: ECS CI/CD Pipeline
-# on:
-#   push:
-#     branches:
-#      # - main
-#       - staging
-#       - feature
+on:
+  push:
+    branches:
+     # - main
+       - test
 
 jobs:
   compile:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup-java
       - uses: ./.github/actions/maven-compile
 
   test:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup-java
       - uses: ./.github/actions/maven-test
 
   build:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     needs: test
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup-java
       - uses: ./.github/actions/maven-package-upload
-
       - uses: actions/checkout@v4
         with:
         # Disabling shallow clones is recommended for improving the relevancy of reporting
-        fetch-depth: 0
+          fetch-depth: 0
       - name: SonarQube Scan
         uses: SonarSource/sonarqube-scan-action@v5.0.0
         env:
            SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-           SONAR_HOST_URL: http://15.207.111.224:9001 #
+           SONAR_HOST_URL: http://13.221.92.143:9000
         
       - name: SonarQube Quality Gate check
         id: sonarqube-quality-gate-check
@@ -46,110 +44,97 @@ jobs:
           pollingTimeoutSec: 600
         env:
             SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-            SONAR_HOST_URL: http://15.207.111.224:9001
+            SONAR_HOST_URL: http://13.221.92.143:9000
 
-  cicd-deploy-versioning:
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
+      # - name: Set Environment Variables Based on Branch
+      #   uses: ./.github/actions/set-env-by-branch
+      #   with:
+      #     branch: ${{ github.ref_name }}
 
-      - name: Download JAR artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: app-jar
-          path: app
+      # - name: Configure AWS credentials
+      #   uses: aws-actions/configure-aws-credentials@v1
+      #   with:
+      #     aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      #     aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      #     aws-region: us-east-1
 
-      - name: Set Environment Variables Based on Branch
-        uses: ./.github/actions/set-env-by-branch
-        with:
-          branch: ${{ github.ref_name }}
+      # - name: Login to Amazon ECR
+      #   id: login-ecr
+      #   uses: aws-actions/amazon-ecr-login@v1
 
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1
+      # - name: Generate Docker Image Tag
+      #   id: tag
+      #   run: |
+      #     BRANCH="${{ github.ref_name }}"
+      #     BUILDNUMB="${{ github.run_number }}"
+      #     DATE=$(date +'%d%m%Y')
+      #     TAG="${BRANCH}_${BUILDNUMB}_${DATE}"
+      #     echo "IMAGE_TAG=$TAG" >> $GITHUB_ENV
+      #     echo "IMAGE_TAG=$TAG" >> $GITHUB_OUTPUT
 
-      - name: Login to Amazon ECR
-        id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v1
+      # - name: Build, Tag, and Push the Image to Amazon ECR
+      #   env:
+      #     ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+      #     IMAGE_TAG: ${{ env.IMAGE_TAG }}
+      #   run: |
+      #     IMAGE_URI="$ECR_REGISTRY/$AWS_ECR_REPOSITORY_NAME:$IMAGE_TAG"
+      #     echo "Building Docker image: $IMAGE_URI"
+      #     docker build -t "$IMAGE_URI" .
+      #     docker push "$IMAGE_URI"
 
-      - name: Generate Docker Image Tag
-        id: tag
-        run: |
-          BRANCH="${{ github.ref_name }}"
-          BUILDNUMB="${{ github.run_number }}"
-          DATE=$(date +'%d%m%Y')
-          TAG="${BRANCH}_${BUILDNUMB}_${DATE}"
-          echo "IMAGE_TAG=$TAG" >> $GITHUB_ENV
-          echo "IMAGE_TAG=$TAG" >> $GITHUB_OUTPUT
+      #     # Also push 'latest' tag
+      #     LATEST_URI="$ECR_REGISTRY/$AWS_ECR_REPOSITORY_NAME:latest"
+      #     docker tag "$IMAGE_URI" "$LATEST_URI"
+      #     docker push "$LATEST_URI"
 
-      - name: Build, Tag, and Push the Image to Amazon ECR
-        env:
-          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          IMAGE_TAG: ${{ env.IMAGE_TAG }}
-        run: |
-          IMAGE_URI="$ECR_REGISTRY/$AWS_ECR_REPOSITORY_NAME:$IMAGE_TAG"
-          echo "Building Docker image: $IMAGE_URI"
-          docker build -t "$IMAGE_URI" .
-          docker push "$IMAGE_URI"
+      # - name: Register new ECS task definition
+      #   id: register-task-def
+      #   env:
+      #     IMAGE_TAG: ${{ env.IMAGE_TAG }}
+      #     ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+      #     CLUSTER_NAME: ${{ secrets.ECS_CLUSTER_NAME }}
+      #     CONTAINER_NAME: ${{ secrets.ECS_CONTAINER_NAME }}
+      #     TASK_EXECUTION_ROLE: ${{ secrets.ECS_TASK_EXECUTION_ROLE }}
+      #     TASK_ROLE: ${{ secrets.ECS_TASK_ROLE }}
+      #   run: |
+      #     IMAGE_URI="$ECR_REGISTRY/$AWS_ECR_REPOSITORY_NAME:$IMAGE_TAG"
+      #     echo "Registering new task definition with image: $IMAGE_URI"
 
-          # Also push 'latest' tag
-          LATEST_URI="$ECR_REGISTRY/$AWS_ECR_REPOSITORY_NAME:latest"
-          docker tag "$IMAGE_URI" "$LATEST_URI"
-          docker push "$LATEST_URI"
+      #     cat > task-def.json <<EOF
+      #     {
+      #       "family": "ecs-deployment-task",
+      #       "networkMode": "awsvpc",
+      #       "requiresCompatibilities": ["FARGATE"],
+      #       "cpu": "512",
+      #       "memory": "1024",
+      #       "executionRoleArn": "$TASK_EXECUTION_ROLE",
+      #       "taskRoleArn": "$TASK_ROLE",
+      #       "containerDefinitions": [
+      #         {
+      #           "name": "$CONTAINER_NAME",
+      #           "image": "$IMAGE_URI",
+      #           "essential": true,
+      #           "portMappings": [
+      #             {
+      #               "containerPort": 8080,
+      #               "protocol": "tcp"
+      #             }
+      #           ]
+      #         }
+      #       ]
+      #     }
+      #     EOF
 
-      - name: Register new ECS task definition
-        id: register-task-def
-        env:
-          IMAGE_TAG: ${{ env.IMAGE_TAG }}
-          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          CLUSTER_NAME: ${{ secrets.ECS_CLUSTER_NAME }}
-          CONTAINER_NAME: ${{ secrets.ECS_CONTAINER_NAME }}
-          TASK_EXECUTION_ROLE: ${{ secrets.ECS_TASK_EXECUTION_ROLE }}
-          TASK_ROLE: ${{ secrets.ECS_TASK_ROLE }}
-        run: |
-          IMAGE_URI="$ECR_REGISTRY/$AWS_ECR_REPOSITORY_NAME:$IMAGE_TAG"
-          echo "Registering new task definition with image: $IMAGE_URI"
+      #     aws ecs register-task-definition             --cli-input-json file://task-def.json             --region us-east-1 > task-def-out.json
 
-          cat > task-def.json <<EOF
-          {
-            "family": "ecs-deployment-task",
-            "networkMode": "awsvpc",
-            "requiresCompatibilities": ["FARGATE"],
-            "cpu": "512",
-            "memory": "1024",
-            "executionRoleArn": "$TASK_EXECUTION_ROLE",
-            "taskRoleArn": "$TASK_ROLE",
-            "containerDefinitions": [
-              {
-                "name": "$CONTAINER_NAME",
-                "image": "$IMAGE_URI",
-                "essential": true,
-                "portMappings": [
-                  {
-                    "containerPort": 8080,
-                    "protocol": "tcp"
-                  }
-                ]
-              }
-            ]
-          }
-          EOF
+      #     TASK_DEF_ARN=$(jq -r '.taskDefinition.taskDefinitionArn' task-def-out.json)
+      #     echo "TASK_DEF_ARN=$TASK_DEF_ARN" >> $GITHUB_ENV
 
-          aws ecs register-task-definition             --cli-input-json file://task-def.json             --region us-east-1 > task-def-out.json
-
-          TASK_DEF_ARN=$(jq -r '.taskDefinition.taskDefinitionArn' task-def-out.json)
-          echo "TASK_DEF_ARN=$TASK_DEF_ARN" >> $GITHUB_ENV
-
-      - name: Update ECS service with new task definition
-        env:
-          CLUSTER_NAME: ${{ secrets.ECS_CLUSTER_NAME }}
-          SERVICE_NAME: ${{ secrets.ECS_SERVICE_NAME }}
-          TASK_DEF_ARN: ${{ env.TASK_DEF_ARN }}
-        run: |
-          echo "Updating ECS service $SERVICE_NAME with task definition $TASK_DEF_ARN"
-          aws ecs update-service             --cluster "$CLUSTER_NAME"             --service "$SERVICE_NAME"             --task-definition "$TASK_DEF_ARN"             --force-new-deployment             --region us-east-1
+      # - name: Update ECS service with new task definition
+      #   env:
+      #     CLUSTER_NAME: ${{ secrets.ECS_CLUSTER_NAME }}
+      #     SERVICE_NAME: ${{ secrets.ECS_SERVICE_NAME }}
+      #     TASK_DEF_ARN: ${{ env.TASK_DEF_ARN }}
+      #   run: |
+      #     echo "Updating ECS service $SERVICE_NAME with task definition $TASK_DEF_ARN"
+      #     aws ecs update-service             --cluster "$CLUSTER_NAME"             --service "$SERVICE_NAME"             --task-definition "$TASK_DEF_ARN"             --force-new-deployment             --region us-east-1
